@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id           String          @id @default(uuid())
+  username     String
+  email        String
+  password     String
+  accountType  String
+  is_active    Boolean
+  userInfo     UserInfo?
+  workspaces   UserWorkspace[]
+
+  @@map("users")
+}
+
+model UserInfo {
+  id       String @id @default(uuid())
+  userId   String @unique
+  metadata Json
+  user     User   @relation(fields: [userId], references: [id])
+
+  @@map("users_info")
+}
+
+model Workspace {
+  id          String          @id @default(uuid())
+  name        String
+  created_at  DateTime
+  updated_at  DateTime
+  users       UserWorkspace[]
+
+  @@map("workspace")
+}
+
+model UserWorkspace {
+  userId      String
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@id([userId, workspaceId])
+  @@map("users_workspace")
+}
